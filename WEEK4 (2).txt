@@ -1,0 +1,299 @@
+week4 
+
+1.Write a C program to block a parent process until child completes. 
+using wait system call.
+#include<unistd.h>
+#include<sys/types.h>
+#include<stdio.h>
+#include<sys/wait.h>
+int main()
+{
+pid_t p;
+printf("before fork\n");
+p=fork();
+if(p==0)//child
+{
+printf("I am child having id %d\n",getpid());
+printf("My parent's id is %d\n",getppid());
+}
+else//parent
+{
+wait(NULL);
+printf("My child's id is %d\n",p);
+printf("I am parent having id %d\n",getpid());
+}
+printf("Common\n");
+}
+
+answer:
+before fork
+I am child having id 4064
+My parent's id is 4063
+Common
+My child's id is 4064
+I am parent having id 4063
+Common
+
+2.Write a program to create a child process. Display the process IDs 
+of the process, parent and child (if any) in both the parent and child 
+processes.
+#include<stdio.h>
+#include<sys/types.h>
+#include<unistd.h>
+int main()
+{
+int pid= fork();
+if (pid>0) {
+printf("parent process\n");
+printf("ID:%d\n\n",getpid());
+}
+else if (pid ==0){
+printf("child process");
+printf("ID:%d\n",getpid());
+}
+else {
+printf("failed to create a child process");
+}      
+return 0;
+}
+
+answer:
+i am parent with id 4071
+i am child with id 4072
+
+
+3.Accept an array of integers. Display the unsorted array in the parent 
+process. Create a child process. Sort and display the sorted array in 
+the child process.
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <stdlib.h>
+void main(){
+int n,i;
+printf("Enter the number of array elements: ");
+scanf("%d", &n);
+int a[n];
+printf("Enter the elements: ");
+for(i=0;i<n;i++){
+scanf("%d",&a[i]);
+}
+void ascending(int *a, int n);
+pid_t pid;
+pid = fork();
+
+if(pid < 0){
+printf("fork() error\n");
+exit(-1);
+}
+else if(pid == 0){
+printf("\n Child Process \n");
+ascending(a,n);
+printf("\n Array elements in ascending order :\n");
+for(i=0;i<n;i++){
+printf("%d \n",a[i]);
+}
+printf("\n");
+exit(0);
+}
+}
+void ascending(int *a, int n){
+int i,j,temp;
+for(i=0;i<n-1;i++){
+for(j=0;j<n-i-1;j++){
+if(a[j+1]<a[j]){
+temp=a[j];
+a[j]=a[j+1];
+a[j+1]=temp;
+}
+}
+}
+}
+
+4.Create a orphan process (parent dies before child, child process 
+adopted by “init” process) and display the PID of parent of child 
+before and after it becomes orphan. Use sleep (n) in the child to 
+delay the termination.
+#include<stdio.h>
+#include<unistd.h>
+#include<sys/types.h>
+int main()
+{
+pid_t p;
+p=fork();
+if(p==0)
+{
+sleep(5);
+printf("Iam child having PID : %d\n",getpid());
+printf("My parent PID :%d\n",getpid());
+}
+else
+{
+printf("iam parent process having PID: %d\n",getpid());
+printf("My child PID : %d\n",p);
+}
+}
+
+5.Write a C program to simulate ls command
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/types.h>
+int main(void)
+{
+execlp("ls","ls",NULL);
+perror("Return from execlp() not expected");
+exit(EXIT_FAILURE);
+}
+
+
+
+filters
+
+echo 'RowNo. Name Location State Age MonthofEntry Gender Height Weight Index' >BMI_2022.dat
+echo '1 John Los_Angeles California 29 Aug Male 174 96 4' >>BMI_2022.dat
+echo '2 Max Chicago Illinois 45 Jan Male 189 87 2' >>BMI_2022.dat
+echo '3 Samantha Houston Texas 25 Jul Felmale 195 104 3' >>BMI_2022.dat
+echo '4 Penelope Phoenix Arizona 48 Sep Female 195 104 3' >>BMI_2022.dat
+echo '5 Henry Fort_Worth Texas 35 Apr Male 149 61 3' >>BMI_2022.dat
+echo '6 William Sen_Francisco California 37 Apr Male 189 104 3' >>BMI_2022.dat
+echo '7 Scott Las_Vegas Nevada 39 May Male 147 92 5' >>BMI_2022.dat
+echo '8 James Miami Florida 26 Oct Male 154 111 5' >>BMI_2022.dat
+echo '9 Jason Oakland California 40 Feb Male 174 90 3' >>BMI_2022.dat
+echo '10 Megan Cincinnati Ohio 24 Nov Female 169 103 4' >>BMI_2022.dat
+
+
+
+
+
+#1.Sort all records based on location
+sort -t ";" -k 3 BMI_2022.dat
+
+#2.Sort all records based on State.
+sort -t ";" -kr BMI_2022.dat
+
+#3.Sort all records based on BMI index.
+sort -t ";" -k 10 BMI_2022.dat
+
+#4.Display all records sorted on State and the location (California -> Los Angeles, Oakland, San 
+Francisco)
+sort -t ";" -k 33 -k 44 BMI_2022.dat
+
+#5.Display only the Row no, Name, Age, Gender and BMI columns.
+cut -d ";" -f 1, 2, 5, 7, 10 BMI_2022.dat
+
+#6.Change all names into upper case.
+cut -d ";" -f 2 BMI_2022.dat | tr a-z A-Z
+
+#7.Sort all records based on age.
+sort -t ";" -n -k5 BMI_2022.dat
+
+#8.Display all records ordered on Month in a file called Personnel_data_month2022.dat
+sort -t ";" -M -k3 BMI_2022.dat >Personnel_data_month2022.dat
+
+#9.Display records where names begin with S and J. Store in a new file SJ_Names.dat
+cut -d ";" -f2 BMI_2022.dat | grep -eM -eH >MH_Names.dat
+
+#10.Move columns Name, Location, State, Age and Index into a new file after sorting on Name 
+field.
+cut -d ";" -f 2, 3, 5, 10 BMI_2022.dat | sort -t "; -k1 >NameSort
+
+
+
+Write a program using fork to create a child process.The parent process should sort elements in ascending order and child process should sort elements in descending order.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>     //header file for exit
+#include <unistd.h>     //header file for fork system call
+#include <sys/types.h>  //header file for pid_t
+
+void main()
+{
+int n,i;
+printf("enter the number of array elements\n");
+scanf("%d",&n);    //read the number of array elements
+int a[n];
+printf("\nEnter the array elements\n");
+for(i=0;i<n;i++)
+{
+scanf("%d",&a[i]);    //read the array elements
+}
+void ascending(int *a,int n);     //parent process function 
+void descending(int *a,int n);    //child process function
+pid_t pid;
+pid=fork();        //creates a child process for current parent process
+if(pid<0)          //if creation of child process fails fork returns -1
+{
+printf("\nfork() error\n");
+exit(-1);
+}
+else if(pid==0)    //fork returns 0 to the child process
+{
+printf("\nCHILD PROCESS\n");
+descending(a,n);
+printf("ARRAY ELEMENTS IN DESCENDING ORDER ARE :\n");
+for(i=0;i<n;i++)
+{
+printf("%d\n",a[i]);
+}
+printf("\n");
+exit(0);   //termination of child process
+}
+else
+{
+int status;
+wait(NULL);    //parent process waits till the child process does not terminate
+printf("PARENT PROCESS\n");
+if(WIFEXITED(status))     //WIFEXITED returns true if process has exited normally
+{
+printf("CHILD PROCESS EXITED WITH STATUS OF %d\n",WEXITSTATUS(status));    //WEXITSTATUS returns the exit status of the child process
+}
+ascending(a,n);
+printf("\nARRAY ELEMENTS IN ASCENDING ORDER ARE :\n");
+for(i=0;i<n;i++)
+{
+printf("%d\n",a[i]);
+}
+printf("\n");
+exit(0);     //termination of parent process
+}
+}
+
+void ascending(int *a,int n)     //parent process sorts array in ascending order
+{
+int i,j,temp;
+for(i=0;i<n-1;i++)
+{
+for(j=0;j<n-1-i;j++)
+{
+if(a[j+1]<a[j])
+{
+temp=a[j];
+a[j]=a[j+1];
+a[j+1]=temp;
+}
+}
+}
+}
+
+void descending(int *a,int n)     //child process sorts array in descending order
+{
+int i,j,temp;
+for(i=0;i<n-1;i++)
+{
+for(j=0;j<n-1-i;j++)
+{
+if(a[j+1]>a[j])
+{
+temp=a[j];
+a[j]=a[j+1];
+a[j+1]=temp;
+}
+}
+}
+}
+
+
+
+
